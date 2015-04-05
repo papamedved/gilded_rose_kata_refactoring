@@ -35,8 +35,8 @@ def update_quality(items)
 
       when 'Conjured Mana Cake'
         item_sell_in_down(item, 1)
-        item_quality_down(item, 2) if 0 < item.sell_in && item.quality != 0
-        item_quality_down(item, 4) if 0 >= item.sell_in && item.quality != 0
+        item_quality_down(item, 2) if item.quality != 0 && item.sell_in > 0
+        item_quality_down(item, 4) if item.quality != 0 && item.sell_in <= 0
 
     end
   end
