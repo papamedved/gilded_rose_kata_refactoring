@@ -1,58 +1,115 @@
+class GildedRose
 
-def item_quality_up(item, value)
-  item.quality += value
-end
+  def initialize(items)
+    @items = items
+  end
 
-def item_quality_down(item, value)
-  item.quality -= value
-end
-
-def item_sell_in_down(item, value)
-  item.sell_in -= value
-end
-
-def update_quality(items)
-  items.each do |item|
-
-    case item.name
-
-      when 'NORMAL ITEM'
-        item_sell_in_down(item, 1)
-        item_quality_down(item, 1) if item.quality > 0
-        item_quality_down(item, 1) if item.sell_in < 0
-
-      when 'Aged Brie'
-        item_sell_in_down(item, 1)
-        item_quality_up(item, 1) if item.quality < 11
-        item_quality_up(item, 1) if item.quality < 50 && item.sell_in < 0
-
-      when 'Backstage passes to a TAFKAL80ETC concert'
-        item_quality_up(item, 1) if item.quality < 50
-        item_quality_up(item, 1) if item.quality < 50 && item.sell_in < 11
-        item_quality_up(item, 1) if item.quality < 50 && item.sell_in < 6
-        item_sell_in_down(item, 1)
-        item_quality_down(item, item.quality) if item.sell_in < 0
-
-      when 'Conjured Mana Cake'
-        item_sell_in_down(item, 1)
-        item_quality_down(item, 2) if item.quality != 0 && item.sell_in > 0
-        item_quality_down(item, 4) if item.quality != 0 && item.sell_in <= 0
-
+  def update_quality()
+    @items.each do |item|
+      item.update
     end
   end
 end
 
-# DO NOT CHANGE THINGS BELOW -----------------------------------------
+class Item
+  attr_accessor :name, :sell_in, :quality
 
-Item = Struct.new(:name, :sell_in, :quality)
+  def initialize(name, sell_in, quality)
+    @name = name 
+    @sell_in = sell_in
+    @quality = quality
+  end
 
-# We use the setup in the spec rather than the following for testing.
-#
-# Items = [
-#   Item.new("+5 Dexterity Vest", 10, 20),
-#   Item.new("Aged Brie", 2, 0),
-#   Item.new("Elixir of the Mongoose", 5, 7),
-#   Item.new("Sulfuras, Hand of Ragnaros", 0, 80),
-#   Item.new("Backstage passes to a TAFKAL80ETC concert", 15, 20),
-#   Item.new("Conjured Mana Cake", 3, 6),
-# ]
+  def to_s()
+    "#{@name}, #{@sell_in}, #{@quality}"
+  end
+  
+  def update
+    ItemUpdater.new(self).update
+  end
+  
+end
+
+class ItemUpdater
+  attr_reader :item
+
+  def initialize(item)
+    @item = item
+  end
+
+  def update
+    case item.name
+      
+      when 'Aged Brie'
+        aged_update_quality
+        aged_update_sell_in
+      
+      when 'Sulfuras, Hand of Ragnaros'
+        sulfuras_update_quality
+        sulfuras_update_sell_in
+      
+      when 'Backstage passes to a TAFKAL80ETC concert'
+        backstage_update_quality
+        backstage_update_sell_in
+      else
+        default_update_quality
+        default_update_sell_in
+      end
+    
+  end
+
+  private
+
+    def default_update_quality
+      if item.sell_in > 0
+        quality = item.quality - 1
+      else
+        quality = item.quality - 2
+      end
+  
+      item.quality = quality if quality >= 0
+    end
+  
+    def default_update_sell_in
+      item.sell_in -= 1
+    end
+    
+    def aged_update_quality
+      if item.sell_in > 0
+        quality = item.quality + 1
+      else
+        quality = item.quality + 2
+      end
+
+      item.quality = quality if quality <= 50
+    end
+
+    def aged_update_sell_in
+      item.sell_in -= 1
+    end
+    
+    def backstage_update_quality
+      quality = if item.sell_in > 10
+                  item.quality + 1
+                elsif item.sell_in > 5
+                  item.quality + 2
+                elsif item.sell_in > 0
+                  item.quality + 3
+                else
+                  0
+                end
+
+      item.quality = quality if quality <= 50
+      item.quality = 50 if quality > 50
+    end
+
+    def backstage_update_sell_in
+      item.sell_in -= 1
+    end
+    
+    def sulfuras_update_quality
+    end
+    
+    def sulfuras_update_sell_in
+    end
+end
