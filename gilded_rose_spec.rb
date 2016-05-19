@@ -47,7 +47,7 @@ describe GildedRose do
       end
 
       
-      it 'Продажа не должна быть отрицательной' do
+      it 'Продажа отрицательна' do
         item = Item.new(item_name, sell_in=0, quality=0)
         items = [item]
         gilded_rose = described_class.new(items)
@@ -381,6 +381,119 @@ describe GildedRose do
 
             expect(item.quality).to eq 0
           end
+        end
+      end
+    end
+    
+    #Conjured
+    context 'Товар Conjured Mana Cake' do
+      it_behaves_like 'Товар по-умолчанию в продаже', 'Conjured Mana Cake'
+
+      context 'Качество товара' do
+        #it_behaves_like 'Качество товара', item_name='Conjured Mana Cake'
+        #
+        context 'Качество товара' do
+      
+        item_name='Conjured Mana Cake'
+        it 'Качество не должно быть отрицательным' do
+          item = Item.new(item_name, sell_in=0, quality=0)
+          items = [item]
+          gilded_rose = described_class.new(items)
+          gilded_rose.update_quality
+  
+          expect(item.quality).to eq 0
+        end
+  
+        
+        it 'Качество не должно быть больше 50' do
+          item = Item.new(item_name, sell_in=20, quality=50)
+          items = [item]
+          gilded_rose = described_class.new(items)
+          gilded_rose.update_quality
+  
+          expect(item.quality).to be <= 50
+        end
+  
+        context 'Продажа в не наступившую дату' do
+          
+          it 'В конце дня уменьшаем качество на 1' do
+            item = Item.new('foo', sell_in=1, quality=1)
+            items = [item]
+            gilded_rose = described_class.new(items)
+            gilded_rose.update_quality
+  
+            expect(item.quality).to eq 0
+          end
+  
+          
+          it 'После N дней уменьшаем качество на N' do
+            n = 10
+            item = Item.new('foo', sell_in=n, quality=n)
+            items = [item]
+            gilded_rose = described_class.new(items)
+  
+            n.times do |i|
+              gilded_rose.update_quality
+              expect(item.quality).to eq (n - (i + 1))
+            end
+  
+            expect(item.quality).to eq 0
+          end
+        end
+  
+        context 'Продажа в прошедшую дату' do
+          
+          it 'В конце дня уменьшаем качество на 2' do
+            item = Item.new('foo', sell_in=0, quality=4)
+            items = [item]
+            gilded_rose = described_class.new(items)
+            gilded_rose.update_quality
+  
+            expect(item.quality).to eq 2
+          end
+  
+          
+          it 'После N дней уменьшаем качество в 2 раза' do
+            n = 5
+            quality = 15
+            item = Item.new('foo', sell_in=0, quality=quality)
+            items = [item]
+            gilded_rose = described_class.new(items)
+  
+            n.times do |i|
+              gilded_rose.update_quality
+              expect(item.quality).to eq (quality - (2 * (i+1)))
+            end
+  
+            expect(item.quality).to eq (quality - (2 * n))
+          end
+        end
+      end
+        #
+      
+
+        it 'lowers quality value by 2 at the end of the day' do
+          item = Item.new('Conjured Mana Cake', sell_in=1, quality=2)
+          items = [item]
+          gilded_rose = described_class.new(items)
+          gilded_rose.update_quality
+
+          expect(item.quality).to eq 0
+        end
+
+        it 'lowers quality value twice as fast after N days' do
+          n = 5
+          quality = 150
+          item = Item.new('Conjured Mana Cake', sell_in=1, quality=quality)
+          items = [item]
+          gilded_rose = described_class.new(items)
+
+          n.times do |i|
+            gilded_rose.update_quality
+            expect(item.quality).to eq (quality - (2 * (i+1)))
+          end
+
+          expect(item.quality).to eq (quality - (2 * n))
         end
       end
     end

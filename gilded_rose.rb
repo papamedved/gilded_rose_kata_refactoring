@@ -6,7 +6,7 @@ class GildedRose
 
   def update_quality()
     @items.each do |item|
-      item.update
+      ItemUpdater.new(item).update
     end
   end
 end
@@ -23,11 +23,6 @@ class Item
   def to_s()
     "#{@name}, #{@sell_in}, #{@quality}"
   end
-  
-  def update
-    ItemUpdater.new(self).update
-  end
-  
 end
 
 class ItemUpdater
@@ -51,6 +46,10 @@ class ItemUpdater
       when 'Backstage passes to a TAFKAL80ETC concert'
         backstage_update_quality
         backstage_update_sell_in
+      
+      when 'Conjured Mana Cake'
+        conjured_update_quality
+        conjured_update_sell_in
       else
         default_update_quality
         default_update_sell_in
@@ -111,5 +110,14 @@ class ItemUpdater
     end
     
     def sulfuras_update_sell_in
+    end
+    
+    def conjured_update_quality
+      quality = item.quality - 2
+      item.quality = quality if quality >= 0
+    end
+  
+    def conjured_update_sell_in
+      item.sell_in -= 1
     end
 end
